@@ -37,10 +37,10 @@ void inflate_proto_entity(entity_proto_t *proto, unsigned short x, unsigned shor
 	store->ai_flags = proto->ai_flags;
 }
 
-void mapchunck_empty(mapchunck_t *store) {
+void mapchunk_empty(mapchunk_t *store) {
 	unsigned char i;
 	for(i=0; i<128; i++) {
-		store->mapdata[i] = 0;
+		store->data[i] = 0;
 	}
 }
 
@@ -73,13 +73,14 @@ void mapcache_init() {
 
 /* EXTERNALS */
 unsigned char *g_vram;
-sprite_t **g_sprite_tile_list;			//all tile sprites; used to draw chuncks
-sprite_t **g_sprite_entity_list;			//all sprites; used to draw chuncks
-sprite_t **g_sprite_projectile_list;		//all sprites; used to draw chuncks
+sprite_t **g_sprite_tile_list;			//all tile sprites; used to draw chunks
+sprite_t **g_sprite_entity_list;			//all sprites; used to draw chunks
+sprite_t **g_sprite_projectile_list;		//all sprites; used to draw chunks
 mapcache_t *g_mapcache;
 player_t *g_player;
 
 unsigned char *vram = 0x00;
+int g_filehandle = -1;
 
 /* GAME */
 unsigned long usedmemory = 0;
@@ -114,7 +115,7 @@ void game_run() {
 	running = 1;
 	onIdle();
 
-	Draw_MapChunck(g_mapcache->cache + DIRECTION_MIDDLE);
+	Draw_Mapchunk(g_mapcache->cache + DIRECTION_MIDDLE);
 	// Draw_Player(1);
 
 	while(running) {
@@ -196,6 +197,26 @@ void game_process_input(int *kc1, int* kc2, short *unused) {
 	*kc1 = 0;
 	*kc2 = 0;
 	*unused = 0;
+
+}
+
+/* LOAD */
+void load_game() {
+	/*
+	* This loads a file ("game.zoldo") from storage as read-only.
+	* It will then read a header and all the sprites.
+	*/
+	int read = 0;
+
+	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
+
+	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','g','a','m','e','.','z','o','l','d','o', 0};
+	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
+
+	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), -1);
+}
+
+void load_mapchunk(unsigned char x, unsigned char y) {
 
 }
 
@@ -311,7 +332,7 @@ unsigned char entity_collide_map(entity_t *e, unsigned char direction) {
 		break;
 	}
 
-	return g_mapcache->cache[DIRECTION_MIDDLE].mapdata[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].mapdata[affected_i2] != 0;
+	return g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
 }
 
 /* DRAW */
@@ -325,7 +346,7 @@ unsigned short to_pos(unsigned char pixel) {
 
 void Draw_Sprite(sprite_t *sprite, unsigned char x, unsigned char y) {
 	//DrawSprite(ppx, ppy, 8, 8, 1, player, vram, NO_TRANS);
-	DrawSprite(x, y, 8, 8, 1, sprite->spritedata, g_vram, NO_TRANS);
+	DrawSprite(x, y, 8, 8, 1, sprite->data, g_vram, NO_TRANS);
 }
 
 void Draw_Entity(entity_t *entity) {
@@ -342,13 +363,13 @@ void Draw_EntityState(entity_t *entity, unsigned char state) {
 	}
 }
 
-void Draw_MapChunck(mapchunck_t *mapchunck) {
+void Draw_Mapchunk(mapchunk_t *mapchunk) {
 	unsigned char x,y,map_i, sprite_i;
 
 	for(y = 0; y < 8; y++) {
 		for(x = 0; x < 16; x++) {
 			map_i = (y*16) + x;
-			sprite_i = mapchunck->mapdata[map_i];
+			sprite_i = mapchunk->data[map_i];
 			if(sprite_i > 0) {
 				Draw_Sprite(g_sprite_tile_list[sprite_i], x*8, y*8);
 			}
