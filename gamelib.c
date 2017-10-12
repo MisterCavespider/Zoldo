@@ -210,7 +210,7 @@ void load_game() {
 
 	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
 
-	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','g','a','m','e','.','z','o','l','d','o', 0};
+	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','G','A','M','E','.','z','o','l','d','o', 0};
 	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
 
 	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), -1);
