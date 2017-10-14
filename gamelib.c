@@ -207,6 +207,7 @@ void load_game() {
 	* It will then read a header and all the sprites.
 	*/
 	int read = 0;
+	int i = 0;
 
 	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
 
@@ -214,6 +215,10 @@ void load_game() {
 	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
 
 	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), -1);
+
+	for(i = 0; i < header->sprites_tile_length) {
+	 	Bfile_ReadFile(g_filehandle, g_sprite_tile_list + i*sizeof(sprite_t), sizeof(game_header_t) + i*sizeof(sprite_t));
+	}
 }
 
 void load_mapchunk(unsigned char x, unsigned char y) {

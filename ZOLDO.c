@@ -155,6 +155,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	// Draw_Entity(entity);
 
+	load_game();
+
 	game_run();
 
 	return 1;
