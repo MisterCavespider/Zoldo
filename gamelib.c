@@ -210,15 +210,30 @@ void load_game() {
 	int i = 0;
 
 	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
+	sprite_t *sprite_tile_list;
 
 	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','G','A','M','E','.','z','o','l','d','o', 0};
 	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
 
-	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), -1);
+	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), 0);
 
-	for(i = 0; i < header->sprites_tile_length) {
-	 	Bfile_ReadFile(g_filehandle, g_sprite_tile_list + i*sizeof(sprite_t), sizeof(game_header_t) + i*sizeof(sprite_t));
+	//allocate a certain amount of mem (specified in header)
+	sprite_tile_list = (sprite_t *)game_cmalloc(sizeof(sprite_t)*header->sprites_tile_length, MEM_EMPTY);
+	//read the list in the file
+	Bfile_ReadFile(g_filehandle, sprite_tile_list, sizeof(sprite_t)*header->sprites_tile_length, 5);
+
+	for(i = 0; i < header->sprites_tile_length; i++) {
+		//put all pointers in the global pointer list
+		g_sprite_tile_list[i] = &(sprite_tile_list[i]);
 	}
+
+	// for(i = 0; i < header->sprites_tile_length; i++) {
+	//  	Bfile_ReadFile(
+	// 		g_filehandle,
+	// 		g_sprite_tile_list + i*sizeof(sprite_t),
+	// 		sizeof(sprite_t),
+	// 		sizeof(game_header_t) + i*sizeof(sprite_t));
+	// }
 }
 
 void load_mapchunk(unsigned char x, unsigned char y) {
@@ -376,7 +391,7 @@ void Draw_Mapchunk(mapchunk_t *mapchunk) {
 			map_i = (y*16) + x;
 			sprite_i = mapchunk->data[map_i];
 			if(sprite_i > 0) {
-				Draw_Sprite(g_sprite_tile_list[sprite_i], x*8, y*8);
+				Draw_Sprite(g_sprite_tile_list[sprite_i - 1], x*8, y*8);
 			}
 		}
 	}

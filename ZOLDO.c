@@ -30,11 +30,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	Bdisp_AllClr_DDVRAM();
 
-	// Bdisp_SetPoint_DDVRAM(0,0,1);
+	Bdisp_SetPoint_DDVRAM(0,0,1);
 
 	game_initialize();
 
-	// Bdisp_SetPoint_DDVRAM(2,0,1);
+	Bdisp_SetPoint_DDVRAM(2,0,1);
 
 	wall = (sprite_t *)game_cmalloc(sizeof(sprite_t), MEM_EMPTY);
 	wall->data[0] = 0xBB;
@@ -56,7 +56,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	wall2->data[6] = 0xDD;
 	wall2->data[7] = 0x14;
 
-	// Bdisp_SetPoint_DDVRAM(4,0,1);
+	Bdisp_SetPoint_DDVRAM(4,0,1);
 
 	player = (sprite_t *)game_cmalloc(sizeof(sprite_t), MEM_EMPTY);
 	player->data[0] = 0x1C;
@@ -89,9 +89,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	ghost->data[6] = 0xa2;
 	ghost->data[7] = 0x26;
 
-	// Bdisp_SetPoint_DDVRAM(6,0,1);
+	Bdisp_SetPoint_DDVRAM(6,0,1);
 
-	// Bdisp_SetPoint_DDVRAM(8,0,1);
+	Bdisp_SetPoint_DDVRAM(8,0,1);
 
 	// mapcache_empty();
 	mapchunk_empty(&g_mapcache->cache[0]);
@@ -125,13 +125,13 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	g_mapcache->cache[0].data[84] = 2;
 	g_mapcache->cache[0].data[91] = 2;
 
-	// Bdisp_SetPoint_DDVRAM(10,0,1);
+	Bdisp_SetPoint_DDVRAM(10,0,1);
 
 	g_sprite_entity_list[0] = player;
 	g_sprite_entity_list[1] = enemy;
 	g_sprite_entity_list[2] = ghost;
-	g_sprite_tile_list[1] = wall2;
-	g_sprite_tile_list[2] = wall;
+	g_sprite_tile_list[0] = wall2;
+	g_sprite_tile_list[1] = wall;
 
 	// Draw_Mapchunk(g_mapcache[DIRECTION_MIDDLE]);
 
