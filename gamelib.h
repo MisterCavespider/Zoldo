@@ -45,8 +45,6 @@ struct mapcache {
 };
 
 void sprite_register(sprite_t *sp, unsigned char i);
-void mapchunk_empty(mapchunk_t *store);
-void mapcache_empty();
 
 /* INITS */
 void globals_initialize();	//initializes extern values
