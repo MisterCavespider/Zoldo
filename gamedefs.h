@@ -18,8 +18,8 @@ struct game_header {
 
 	unsigned char		entity_protos_length;
 
-	unsigned char		mapsize_x;
-	unsigned char		mapsize_y;
+	unsigned char		mapsize_x, mapsize_y;
+	//unsigned char		player_x, player_y;
 };
 
 struct game_pack {
@@ -36,6 +36,10 @@ struct sprite {
 	unsigned char		data[8];
 };
 
+/*
+ * A combination of entity_proto and entity_proto_ref.
+ * Contains all data for loaded entities.
+ */
 struct entity {
 	unsigned char sprite_i;
 
@@ -48,17 +52,24 @@ struct entity {
 	unsigned short ai_flags;
 };
 
+/*
+ * Serializable. Contains all immutable data.
+ */
 struct entity_proto {
-	unsigned char		sprite_index;
+	unsigned char		sprite_index;	//'pointer' to sprite
 
-	unsigned char		hp;
-	unsigned char		fight_stats;
+	unsigned char		hp;				//amount og hitpoints left
+	unsigned char		fight_stats;	//0xF- for attack, 0x-F for defence
 
-	unsigned short		speed;
+	unsigned short		speed;			//speed in steps; 1 step = 1/512 px
 
-	unsigned short		ai_flags;
+	unsigned short		ai_flags;		//flags/modifiers for the AI
 };
 
+/*
+ * Reference to the entity prototype.
+ * Contains all mutable data.
+ */
 struct entity_proto_ref {
 	unsigned char		proto_index;
 	unsigned short		x;

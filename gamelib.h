@@ -44,9 +44,7 @@ struct mapcache {
 	entity_t entities[8];	//8 entities (loaded)
 };
 
-void sprite_register_player(sprite_t *sp);
 void sprite_register(sprite_t *sp, unsigned char i);
-void inflate_proto_entity(entity_proto_t *proto, unsigned short x, unsigned short y, unsigned char move_stats, entity_t *store);
 void mapchunk_empty(mapchunk_t *store);
 void mapcache_empty();
 
@@ -55,11 +53,15 @@ void globals_initialize();	//initializes extern values
 void game_initialize();		//initializes game values & globals
 void mapcache_init();
 
+/* LOAD */
+void load_game();
+void load_mapchunk(unsigned char x, unsigned char y);
+
 /* EXTERNALS */
 extern unsigned char *g_vram;					//where the VRAM is on the 9860gii
-extern sprite_t **g_sprite_tile_list;			//all tile sprites; used to draw chunks
-extern sprite_t **g_sprite_entity_list;			//all sprites; used to draw chunks
-extern sprite_t **g_sprite_projectile_list;		//all sprites; used to draw chunks
+extern sprite_t *g_sprite_tile_list;			//all tile sprites; used to draw chunks
+extern sprite_t *g_sprite_entity_list;			//all sprites; used to draw chunks
+extern sprite_t *g_sprite_projectile_list;		//all sprites; used to draw chunks
 extern mapcache_t *g_mapcache;					//all currently loaded maps
 extern player_t *g_player;						//the player
 
@@ -72,10 +74,6 @@ void game_stop();
 void game_process_entities();
 void game_process_projectiles();
 void game_process_input(int *kc1, int* kc2, short *unused);
-
-/* LOAD */
-void load_game();
-void load_mapchunk(unsigned char x, unsigned char y);
 
 /* ENTITIES */
 char entity_add(entity_t* e);
