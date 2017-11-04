@@ -15,6 +15,7 @@ typedef struct	mapchunk			mapchunk_t;
 struct game_header {
 	unsigned char		sprites_tile_length;
 	unsigned char		sprites_entity_length;
+	// unsigned char		sprites_projectile_length;
 
 	unsigned char		entity_protos_length;
 

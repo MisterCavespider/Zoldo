@@ -1,4 +1,4 @@
-s #include "gamelib.h"
+#include "gamelib.h"
 #include "stddef.h"
 #include "stdlib.h"
 #include "revolution.h"
@@ -17,9 +17,20 @@ const unsigned int sc0135[] = { 0xD201D002, 0x422B0009, 0x80010070, 0x0135 };
 
 void sprite_register(sprite_t *sp, unsigned char i) {
 	if(i > 0) {
-		g_sprite_tile_list[i] = sp;
+		g_sprite_tile_list[i] = *sp;
 	}
 }
+
+/* EXTERNALS */						//<desc>						<alloc>
+unsigned char *g_vram;				//for revolution				C
+sprite_t *g_sprite_tile_list;		//all tile sprites				ZOLDO
+sprite_t *g_sprite_entity_list;		//all entity sprites			ZOLDO
+sprite_t *g_sprite_projectile_list;	//all projectile sprites		ZOLDO
+mapcache_t *g_mapcache;				//currently loaded map			C
+player_t *g_player;					//player + embedded entity		C
+
+unsigned char *vram = 0x00;
+int g_filehandle = -1;
 
 /* INITS */
 void globals_initialize() {
@@ -39,47 +50,40 @@ void game_initialize() {
 }
 
 /* LOAD */
+/**
+ * This loads a file ("game.zoldo") from storage as read-only.
+ * It will then read a header and all the sprites.
+ */
 void load_game() {
-	/*
-	* This loads a file ("game.zoldo") from storage as read-only.
-	* It will then read a header and all the sprites.
-	*/
-	int read = 0;
-	size_t s = 0;		//remporary value; could be anything
+	size_t read = 0;
+	size_t s = 0;		//temporary value; could be anything
 
 	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
-
-	sprite_t *sprite_tile_list;
 
 	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','G','A','M','E','.','z','o','l','d','o', 0};
 	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
 
-	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), 0);
+	s = sizeof(game_header_t);
+	Bfile_ReadFile(g_filehandle, header, s, read);
+	read += s;
+
 
 	s = sizeof(sprite_t)*header->sprites_tile_length;
 	g_sprite_tile_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);		//alloc
-	Bfile_ReadFile(g_filehandle, g_sprite_tile_list, s, 5);				//read
+	Bfile_ReadFile(g_filehandle, g_sprite_tile_list, s, read);			//read
+	read += s;
 
 	s = sizeof(sprite_t)*header->sprites_entity_length;
 	g_sprite_entity_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);		//alloc
-	Bfile_ReadFile(g_filehandle, g_sprite_entity_list, s, 5);			//read
+	Bfile_ReadFile(g_filehandle, g_sprite_entity_list, s, read);		//read
+	read += s;
 
-	s = sizeof(sprite_t)*header->g_sprite_projectile_list;
-	g_sprite_projectile_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);	//alloc
-	Bfile_ReadFile(g_filehandle, g_sprite_projectile_list, s, 5);		//read
-
-	for(s = 0; s < header->sprites_tile_length; s++) {
-		//put all pointers in the global pointer list
-		g_sprite_tile_list[s] = &(sprite_tile_list[s]);
-	}
-
-	// for(s = 0; i < header->sprites_tile_length; i++) {
-	//  	Bfile_ReadFile(
-	// 		g_filehandle,
-	// 		g_sprite_tile_list + i*sizeof(sprite_t),
-	// 		sizeof(sprite_t),
-	// 		sizeof(game_header_t) + i*sizeof(sprite_t));
-	// }
+	// NOT IMPLEMENTED YET
+	//
+	// s = sizeof(sprite_t)*header->sprites_projectile_length;
+	// g_sprite_projectile_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);	//alloc
+	// Bfile_ReadFile(g_filehandle, g_sprite_projectile_list, s, read);	//read
+	// read += s;
 }
 
 void load_mapchunk(unsigned char x, unsigned char y) {
@@ -89,17 +93,6 @@ void load_mapchunk(unsigned char x, unsigned char y) {
 void mapcache_init() {
 
 }
-
-/* EXTERNALS */						//<desc>						<alloc>
-unsigned char *g_vram;				//for revolution				C
-sprite_t *g_sprite_tile_list;		//all tile sprites				ZOLDO
-sprite_t *g_sprite_entity_list;		//all entity sprites			ZOLDO
-sprite_t *g_sprite_projectile_list;	//all projectile sprites		ZOLDO
-mapcache_t *g_mapcache;				//currently loaded map			C
-player_t *g_player;					//player + embedded entity		C
-
-unsigned char *vram = 0x00;
-int g_filehandle = -1;
 
 /* GAME */
 unsigned long usedmemory = 0;
@@ -331,7 +324,7 @@ unsigned char entity_collide_map(entity_t *e, unsigned char direction) {
 		break;
 	}
 
-	return g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
+	return (g_mapcache->cache[DIRECTION_MIDDLE]).data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
 }
 
 /* DRAW */

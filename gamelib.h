@@ -44,6 +44,14 @@ struct mapcache {
 	entity_t entities[8];	//8 entities (loaded)
 };
 
+/* EXTERNALS */
+extern unsigned char *g_vram;					//where the VRAM is on the 9860gii
+extern sprite_t *g_sprite_tile_list;			//all tile sprites; used to draw chunks
+extern sprite_t *g_sprite_entity_list;			//all sprites; used to draw chunks
+extern sprite_t *g_sprite_projectile_list;		//all sprites; used to draw chunks
+extern mapcache_t *g_mapcache;					//all currently loaded maps
+extern player_t *g_player;						//the player
+
 void sprite_register(sprite_t *sp, unsigned char i);
 
 /* INITS */
@@ -54,14 +62,6 @@ void mapcache_init();
 /* LOAD */
 void load_game();
 void load_mapchunk(unsigned char x, unsigned char y);
-
-/* EXTERNALS */
-extern unsigned char *g_vram;					//where the VRAM is on the 9860gii
-extern sprite_t *g_sprite_tile_list;			//all tile sprites; used to draw chunks
-extern sprite_t *g_sprite_entity_list;			//all sprites; used to draw chunks
-extern sprite_t *g_sprite_projectile_list;		//all sprites; used to draw chunks
-extern mapcache_t *g_mapcache;					//all currently loaded maps
-extern player_t *g_player;						//the player
 
 /* GAME */
 void *game_cmalloc(size_t size, unsigned char calloc);
