@@ -87,6 +87,8 @@ void entity_xmove(entity_t* e, unsigned char direction, int x);
 
 unsigned char entity_collide_map(entity_t *e, unsigned char direction);
 
+unsigned char player_onborder();
+
 /* DRAW */
 void Draw_Sprite(sprite_t *sprite, unsigned char x, unsigned char y);
 void Draw_Entity(entity_t *entity);

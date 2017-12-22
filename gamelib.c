@@ -129,9 +129,19 @@ void game_run() {
 			game_process_entities();
 			game_process_input(kc1, kc2, unused);
 
-			Draw_EntityState(&g_mapcache->entities[0], 1);
-			Draw_EntityState(&g_mapcache->entities[1], 1);
-			Draw_EntityState(&g_player->character, 1);
+			if(player_onborder() == DIRECTION_MIDDLE) {
+				Draw_EntityState(&g_mapcache->entities[0], 1);
+				Draw_EntityState(&g_mapcache->entities[1], 1);
+				Draw_EntityState(&g_player->character, 1);
+			} else {
+				switch (player_onborder()) {
+					case DIRECTION_NORTH:
+						break;
+					case DIRECTION_NORTH:
+						break;
+
+				}
+			}
 
 			Bdisp_PutDisp_DD();
 
@@ -179,19 +189,15 @@ void game_process_input(int *kc1, int* kc2, short *unused) {
 	}
 	if(*kc1 == 2 && *kc2 == 9) {
 		entity_move(&g_player->character, DIRECTION_NORTH);
-		Bdisp_SetPoint_DDVRAM(0,0,1);
 	}	//up
 	if(*kc1 == 2 && *kc2 == 8) {
 		entity_move(&g_player->character, DIRECTION_EAST);
-		Bdisp_SetPoint_DDVRAM(1,0,1);
 	}	//right
 	if(*kc1 == 3 && *kc2 == 8) {
 		entity_move(&g_player->character, DIRECTION_SOUTH);
-		Bdisp_SetPoint_DDVRAM(2,0,1);
 	}	//down
 	if(*kc1 == 3 && *kc2 == 9) {
 		entity_move(&g_player->character, DIRECTION_WEST);
-		Bdisp_SetPoint_DDVRAM(3,0,1);
 	}	//left
 
 	*kc1 = 0;
@@ -333,6 +339,22 @@ unsigned char entity_collide_map(entity_t *e, unsigned char direction) {
 	}
 
 	return g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
+}
+
+unsigned char player_onborder() {
+	if(g_player->character.x < 0x0000) {
+		return DIRECTION_WEST;
+	}
+	if(g_player->character.x > 0xF000) {
+		return DIRECTION_EAST;
+	}
+	if(g_player->character.y < 0x0000) {
+		return DIRECTION_NORTH;
+	}
+	if(g_player->character.x > 0x7000) {
+		return DIRECTION_SOUTH;
+	}
+	return DIRECTION_MIDDLE;
 }
 
 /* DRAW */
