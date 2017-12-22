@@ -61,7 +61,7 @@ void mapcache_init();
 
 /* LOAD */
 void load_game();
-void load_mapchunk(unsigned char x, unsigned char y);
+void load_mapchunk(game_header_t *header, size_t coffset, unsigned char x, unsigned char y, mapchunk_t *store);
 
 /* GAME */
 void *game_cmalloc(size_t size, unsigned char calloc);

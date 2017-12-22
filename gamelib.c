@@ -67,7 +67,6 @@ void load_game() {
 	Bfile_ReadFile(g_filehandle, header, s, read);
 	read += s;
 
-
 	s = sizeof(sprite_t)*header->sprites_tile_length;
 	g_sprite_tile_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);		//alloc
 	Bfile_ReadFile(g_filehandle, g_sprite_tile_list, s, read);			//read
@@ -78,6 +77,8 @@ void load_game() {
 	Bfile_ReadFile(g_filehandle, g_sprite_entity_list, s, read);		//read
 	read += s;
 
+	load_mapchunk(header, read, 0,0, &(g_mapcache->cache[0]));
+
 	// NOT IMPLEMENTED YET
 	//
 	// s = sizeof(sprite_t)*header->sprites_projectile_length;
@@ -86,8 +87,12 @@ void load_game() {
 	// read += s;
 }
 
-void load_mapchunk(unsigned char x, unsigned char y) {
-
+void load_mapchunk(game_header_t *header, size_t coffset, unsigned char x, unsigned char y, mapchunk_t *store) {
+	// Calculate offset
+	size_t offset = coffset + (x + y * header->mapsize_x) * sizeof(mapchunk_t);
+	// Read at offset; store at store
+	Bfile_ReadFile(g_filehandle, store, sizeof(mapchunk_t), offset);
+	return;
 }
 
 void mapcache_init() {

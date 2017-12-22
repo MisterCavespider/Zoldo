@@ -5,7 +5,7 @@
 [BINDATA]    : "FXADDINror.bin"
 [DISPNAME]   : "ZOLDO"
 [APPNAME]    : "@ZOLDO"
-[VERSION]    : "0.1.0"
+[VERSION]    : "00.01.0000"
 [APL_ICON]   : "MainIcon.bmp"
 [MODULE_NUM] : 0
 [MOD1_TITLE] : "ZOLDO"
