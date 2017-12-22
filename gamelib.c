@@ -14,35 +14,23 @@ const unsigned int sc0135[] = { 0xD201D002, 0x422B0009, 0x80010070, 0x0135 };
 #define GetVRAMAddress (*(sc_cpv)sc0135)
 
 /* STRUCTS */
-void sprite_register_player(sprite_t *sp) {
-	g_sprite_tile_list[0] = sp;
-}
 
 void sprite_register(sprite_t *sp, unsigned char i) {
 	if(i > 0) {
-		g_sprite_tile_list[i] = sp;
+		g_sprite_tile_list[i] = *sp;
 	}
 }
 
-void inflate_proto_entity(entity_proto_t *proto, unsigned short x, unsigned short y, unsigned char move_stats, entity_t *store) {
-	if(move_stats == 0x00) {
-		move_stats = (move_stats << 4) + DIRECTION_NORTH;
-	}
+/* EXTERNALS */						//<desc>						<alloc>
+unsigned char *g_vram;				//for revolution				C
+sprite_t *g_sprite_tile_list;		//all tile sprites				ZOLDO
+sprite_t *g_sprite_entity_list;		//all entity sprites			ZOLDO
+sprite_t *g_sprite_projectile_list;	//all projectile sprites		ZOLDO
+mapcache_t *g_mapcache;				//currently loaded map			C
+player_t *g_player;					//player + embedded entity		C
 
-	store->hp = proto->hp;
-	store->fight_stats = proto->fight_stats;
-	store->x = x;
-	store->y = y;
-	store->speed = proto->speed;
-	store->ai_flags = proto->ai_flags;
-}
-
-void mapchunk_empty(mapchunk_t *store) {
-	unsigned char i;
-	for(i=0; i<128; i++) {
-		store->data[i] = 0;
-	}
-}
+unsigned char *vram = 0x00;
+int g_filehandle = -1;
 
 /* INITS */
 void globals_initialize() {
@@ -54,33 +42,62 @@ void globals_initialize() {
 void game_initialize() {
 	globals_initialize();
 
-	//should be first in memory
+	//only variables that aren't declared when reading a file
 	g_player = (player_t *)game_cmalloc(sizeof(player_t), MEM_EMPTY);
-
-	//should be second in memory
 	g_mapcache = (mapcache_t *)game_cmalloc(sizeof(mapcache_t) * 4, MEM_EMPTY);
-	mapcache_init();
 
-	//memory location doesn't matter
-	g_sprite_tile_list = (sprite_t **)game_cmalloc(sizeof(sprite_t *) * 128, MEM_EMPTY);
-	g_sprite_entity_list = (sprite_t **)game_cmalloc(sizeof(sprite_t *) * 64, MEM_EMPTY);
-	g_sprite_projectile_list = (sprite_t **)game_cmalloc(sizeof(sprite_t *) * 16, MEM_EMPTY);
+	load_game();
+}
+
+/* LOAD */
+/**
+ * This loads a file ("game.zoldo") from storage as read-only.
+ * It will then read a header and all the sprites.
+ */
+void load_game() {
+	size_t read = 0;
+	size_t s = 0;		//temporary value; could be anything
+
+	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
+
+	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','G','A','M','E','.','z','o','l','d','o', 0};
+	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
+
+	s = sizeof(game_header_t);
+	Bfile_ReadFile(g_filehandle, header, s, read);
+	read += s;
+
+	s = sizeof(sprite_t)*header->sprites_tile_length;
+	g_sprite_tile_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);		//alloc
+	Bfile_ReadFile(g_filehandle, g_sprite_tile_list, s, read);			//read
+	read += s;
+
+	s = sizeof(sprite_t)*header->sprites_entity_length;
+	g_sprite_entity_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);		//alloc
+	Bfile_ReadFile(g_filehandle, g_sprite_entity_list, s, read);		//read
+	read += s;
+
+	load_mapchunk(header, read, 0,0, &(g_mapcache->cache[0]));
+
+	// NOT IMPLEMENTED YET
+	//
+	// s = sizeof(sprite_t)*header->sprites_projectile_length;
+	// g_sprite_projectile_list = (sprite_t *)game_cmalloc(s, MEM_IGNORE);	//alloc
+	// Bfile_ReadFile(g_filehandle, g_sprite_projectile_list, s, read);	//read
+	// read += s;
+}
+
+void load_mapchunk(game_header_t *header, size_t coffset, unsigned char x, unsigned char y, mapchunk_t *store) {
+	// Calculate offset
+	size_t offset = coffset + (x + y * header->mapsize_x) * sizeof(mapchunk_t);
+	// Read at offset; store at store
+	Bfile_ReadFile(g_filehandle, store, sizeof(mapchunk_t), offset);
+	return;
 }
 
 void mapcache_init() {
 
 }
-
-/* EXTERNALS */
-unsigned char *g_vram;
-sprite_t **g_sprite_tile_list;			//all tile sprites; used to draw chunks
-sprite_t **g_sprite_entity_list;			//all sprites; used to draw chunks
-sprite_t **g_sprite_projectile_list;		//all sprites; used to draw chunks
-mapcache_t *g_mapcache;
-player_t *g_player;
-
-unsigned char *vram = 0x00;
-int g_filehandle = -1;
 
 /* GAME */
 unsigned long usedmemory = 0;
@@ -94,11 +111,11 @@ void *game_cmalloc(size_t size, unsigned char c) {
 		return (void *) MEM_START;
 	}
 
-	if(c) {
+	if(c) {	//empty it
 		for(i = 0; i < size; i++) {
 			*((char *)(r) + i) = 0x00;
 		}
-	}
+	}	//else don't do anything
 
 	usedmemory += size;
 	return r;
@@ -197,26 +214,6 @@ void game_process_input(int *kc1, int* kc2, short *unused) {
 	*kc1 = 0;
 	*kc2 = 0;
 	*unused = 0;
-
-}
-
-/* LOAD */
-void load_game() {
-	/*
-	* This loads a file ("game.zoldo") from storage as read-only.
-	* It will then read a header and all the sprites.
-	*/
-	int read = 0;
-
-	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
-
-	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','g','a','m','e','.','z','o','l','d','o', 0};
-	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
-
-	Bfile_ReadFile(g_filehandle, header, sizeof(game_header_t), -1);
-}
-
-void load_mapchunk(unsigned char x, unsigned char y) {
 
 }
 
@@ -332,7 +329,7 @@ unsigned char entity_collide_map(entity_t *e, unsigned char direction) {
 		break;
 	}
 
-	return g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
+	return (g_mapcache->cache[DIRECTION_MIDDLE]).data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
 }
 
 /* DRAW */
@@ -350,13 +347,13 @@ void Draw_Sprite(sprite_t *sprite, unsigned char x, unsigned char y) {
 }
 
 void Draw_Entity(entity_t *entity) {
-	Draw_Sprite(g_sprite_entity_list[(entity->sprite_i < 64) ? entity->sprite_i : 63], entity->x/512, entity->y/512);
+	Draw_Sprite(&g_sprite_entity_list[(entity->sprite_i < 64) ? entity->sprite_i : 63], entity->x/512, entity->y/512);
 }
 
 void Draw_EntityState(entity_t *entity, unsigned char state) {
 	if(state) {
 		//draw
-		Draw_Sprite(g_sprite_entity_list[entity->sprite_i], entity->x/512, entity->y/512);
+		Draw_Sprite(&g_sprite_entity_list[entity->sprite_i], entity->x/512, entity->y/512);
 	} else {
 		//remove player
 		ClearArea(entity->x/512, entity->y/512, entity->x/512+7, entity->y/512+7, g_vram);
@@ -371,7 +368,7 @@ void Draw_Mapchunk(mapchunk_t *mapchunk) {
 			map_i = (y*16) + x;
 			sprite_i = mapchunk->data[map_i];
 			if(sprite_i > 0) {
-				Draw_Sprite(g_sprite_tile_list[sprite_i], x*8, y*8);
+				Draw_Sprite(&g_sprite_tile_list[sprite_i - 1], x*8, y*8);
 			}
 		}
 	}
