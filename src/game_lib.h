@@ -25,8 +25,12 @@
 #define AI_ARG1				0x00F0
 #define AI_ARG2				0x000F
 
+typedef char*(*sc_cpv)(void);
+const unsigned int sc0135[] = { 0xD201D002, 0x422B0009, 0x80010070, 0x0135 };
+#define GetVRAMAddress (*(sc_cpv)sc0135)
+
 // External values (only globals)
-game_globals_t *g;
+extern game_globals_t *g;
 
 // Timer & Misc
 void onIdle();	// Shouldn't be called externally, but it could
@@ -38,7 +42,7 @@ void mapcache_init();
 
 /* LOAD */
 void load_game();
-void load_mapchunk(game_header_t *header, size_t coffset, unsigned char x, unsigned char y, mapchunk_t *store);
+void load_mapchunk(game_header_t *header, size_t coffset, unsigned char x, unsigned char y, map_chunk_t *store);
 
 /* GAME */
 void *game_cmalloc(size_t size, unsigned char calloc);
@@ -51,21 +55,21 @@ void game_process_projectiles();
 void game_process_input(int *kc1, int* kc2, short *unused);
 
 /* ENTITIES */
-char entity_add(entity_t* e);
+char entity_add(entity_proto_ref_t* e);
 void entity_remove(unsigned char index);
 
-void entity_ai(entity_t* e);
-void entity_move(entity_t* e, unsigned char direction);
-void entity_xmove(entity_t* e, unsigned char direction, int x);
+void entity_ai(entity_proto_ref_t* e);
+void entity_move(entity_proto_ref_t* e, unsigned char direction);
+void entity_xmove(entity_proto_ref_t* e, unsigned char direction, int x);
 
-unsigned char entity_collide_map(entity_t *e, unsigned char direction);
+unsigned char entity_collide_map(entity_proto_ref_t *e, unsigned char direction);
 
 unsigned char player_onborder();
 
 /* DRAW */
 void Draw_Sprite(sprite_t *sprite, unsigned char x, unsigned char y);
-void Draw_Entity(entity_t *entity);
-void Draw_EntityState(entity_t *entity, unsigned char state);
-void Draw_Mapchunk(mapchunk_t *mc);
+void Draw_Entity(entity_proto_ref_t *entity);
+void Draw_EntityState(entity_proto_ref_t *entity, unsigned char state);
+void Draw_Mapchunk(map_chunk_t *mc);
 
 #endif

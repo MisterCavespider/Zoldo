@@ -10,7 +10,7 @@ typedef struct	map_chunk			map_chunk_t;
 typedef struct	map_cache			map_cache_t;
 
 typedef struct	game_header			game_header_t;
-typedef struct	game_pack			game_pack_t;
+typedef struct	game_globals		game_globals_t;
 
 /*
  * Contains everything needed
@@ -68,7 +68,7 @@ struct entity_proto_ref {
 };
 
 struct player {
-	entity_t character;
+	entity_proto_ref_t character_ref;
 	/*
 	These values describe the position of the chunk compared to the others
 
@@ -87,9 +87,7 @@ struct map_chunk {
 
 struct map_cache {
 	map_chunk_t cache[5];
-
-	unsigned char sizes;	//0xF0 | 0x0F
-	entity_t entities[8];	//8 entities (loaded)
+	entity_proto_ref_t entities[8];	//8 entities (loaded)
 };
 
 struct game_header {
@@ -108,7 +106,7 @@ struct game_globals {
 	unsigned char *vram;				//where the VRAM is on the 9860gii
 
 	// File handling
-	int filehandle = -1;				// What file?
+	int filehandle;				// What file?
 	size_t mapFileOffset;				// Where the map starts (this value is allways needed)
 	game_header_t *header;				// The header containing metadata
 

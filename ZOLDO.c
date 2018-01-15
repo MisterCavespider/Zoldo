@@ -170,5 +170,5 @@ int main(int isAppli, unsigned short OptionNum)
 
 	// game_run();
 
-	return 1;
+	return 0;
 }
