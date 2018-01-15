@@ -25,10 +25,6 @@
 #define AI_ARG1				0x00F0
 #define AI_ARG2				0x000F
 
-typedef char*(*sc_cpv)(void);	// Code from the web
-const unsigned int sc0135[] = { 0xD201D002, 0x422B0009, 0x80010070, 0x0135 };
-#define GetVRAMAddress (*(sc_cpv)sc0135)
-
 // External values (only globals)
 game_globals_t *g;
 
