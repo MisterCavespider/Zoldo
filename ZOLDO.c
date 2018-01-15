@@ -142,8 +142,10 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	// these are an exception to the rule above, as the memory must first have been allocated
 	g_player->character.x = 0x2000;
 	g_player->character.y = 0x2000;
-	g_player->character.speed = 512;
+	g_player->character.speed = 0x0200;
 	g_player->character.sprite_i = 0;
+	g_player->map_x = 0;
+	g_player->map_y = 0;
 
 	entity1->speed = 256;
 	entity1->x = 0x3000;

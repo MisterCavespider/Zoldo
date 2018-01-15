@@ -19,7 +19,8 @@ struct game_header {
 
 	unsigned char		entity_protos_length;
 
-	unsigned char		mapsize_x, mapsize_y;
+	unsigned char		mapsize_x;
+	unsigned char		mapsize_y;
 	//unsigned char		player_x, player_y;
 };
 
@@ -79,8 +80,9 @@ struct entity_proto_ref {
 
 struct mapchunk {
 	unsigned char		data[128];
-	unsigned char		x,y;
-	unsigned char		entity_refs_length;
+	//These values are turned off because baked maps dont use them
+	//unsigned char		x,y;
+	//unsigned char		entity_refs_length;
 };
 
 

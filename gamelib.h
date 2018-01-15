@@ -34,7 +34,8 @@ struct player {
 
 	Can store at most 0xFF and 0xFF == a map with 256 by 256 chunks
 	*/
-	unsigned char map_x,map_y;
+	unsigned char map_x;
+	unsigned char map_y;
 };
 
 struct mapcache {

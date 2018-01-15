@@ -54,14 +54,18 @@ void game_initialize() {
  * This loads a file ("game.zoldo") from storage as read-only.
  * It will then read a header and all the sprites.
  */
+
+//Cheaty and temporary:
+size_t read;
+game_header_t *header;
+
 void load_game() {
-	size_t read = 0;
 	size_t s = 0;		//temporary value; could be anything
-
-	game_header_t *header = (game_header_t *)malloc(sizeof(game_header_t));
-
 	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','G','A','M','E','.','z','o','l','d','o', 0};
 	g_filehandle = Bfile_OpenFile(path, _OPENMODE_READ);
+
+	read = (size_t)malloc(sizeof(size_t));
+	header = (game_header_t *)malloc(sizeof(game_header_t));
 
 	s = sizeof(game_header_t);
 	Bfile_ReadFile(g_filehandle, header, s, read);
@@ -89,7 +93,13 @@ void load_game() {
 
 void load_mapchunk(game_header_t *header, size_t coffset, unsigned char x, unsigned char y, mapchunk_t *store) {
 	// Calculate offset
-	size_t offset = coffset + (x + y * header->mapsize_x) * sizeof(mapchunk_t);
+	size_t offset = coffset + (x + y*8) * 128;	//TODO: There are some hardcoded values here
+
+
+	unsigned char *text = (unsigned char *)malloc(22*sizeof(unsigned char));
+	sprintf(text, "mapoff: %d", (x + y*8));
+	PrintMini(8,8, text, MINI_REV);
+
 	// Read at offset; store at store
 	Bfile_ReadFile(g_filehandle, store, sizeof(mapchunk_t), offset);
 	return;
@@ -129,10 +139,14 @@ void game_run() {
 	int *kc2 = (int *)malloc(sizeof(int *));
 	short *unused = (short *)malloc(sizeof(short *));
 
+	unsigned char *text = (unsigned char *)malloc(22*sizeof(unsigned char));
+
+	unsigned char border = 0;
+
 	running = 1;
 	onIdle();
 
-	Draw_Mapchunk(g_mapcache->cache + DIRECTION_MIDDLE);
+	Draw_Mapchunk(&g_mapcache->cache[DIRECTION_MIDDLE]);
 	// Draw_Player(1);
 
 	while(running) {
@@ -146,19 +160,34 @@ void game_run() {
 			game_process_entities();
 			game_process_input(kc1, kc2, unused);
 
-			if(player_onborder() == DIRECTION_MIDDLE) {
-				Draw_EntityState(&g_mapcache->entities[0], 1);
-				Draw_EntityState(&g_mapcache->entities[1], 1);
-				Draw_EntityState(&g_player->character, 1);
-			} else {
-				switch (player_onborder()) {
-					case DIRECTION_NORTH:
-						break;
-					case DIRECTION_NORTH:
-						break;
+			border = player_onborder();
+			if(border != DIRECTION_MIDDLE) {
+				Bdisp_AllClr_DDVRAM();
 
+				if(border == DIRECTION_NORTH) {
+					g_player->map_y--;
+					g_player->character.y = 0x6D00;
+				} else if (border == DIRECTION_EAST) {
+					g_player->map_x++;
+					g_player->character.x = 0x0200;
+				} else if (border == DIRECTION_SOUTH) {
+					g_player->map_y++;
+					g_player->character.y = 0x0200;
+				} else if (border == DIRECTION_WEST) {
+					g_player->map_x--;
+					g_player->character.x = 0xED00;
 				}
+
+				load_mapchunk(header, read, g_player->map_x, g_player->map_y, &(g_mapcache->cache[0]));
+				Draw_Mapchunk(&g_mapcache->cache[DIRECTION_MIDDLE]);
 			}
+
+			Draw_EntityState(&g_mapcache->entities[0], 1);
+			Draw_EntityState(&g_mapcache->entities[1], 1);
+			Draw_EntityState(&g_player->character, 1);
+
+			sprintf(text, "uhh: %d", 12);
+			PrintMini(8,8, text, MINI_REV);
 
 			Bdisp_PutDisp_DD();
 
@@ -203,7 +232,7 @@ void game_process_input(int *kc1, int* kc2, short *unused) {
 
 	if(*kc1 == 4 && *kc2 == 8) {
 		running = 0;
-	}
+	}	//exit
 	if(*kc1 == 2 && *kc2 == 9) {
 		entity_move(&g_player->character, DIRECTION_NORTH);
 	}	//up
@@ -338,17 +367,22 @@ unsigned char entity_collide_map(entity_t *e, unsigned char direction) {
 	return (g_mapcache->cache[DIRECTION_MIDDLE]).data[affected_i1] != 0 || g_mapcache->cache[DIRECTION_MIDDLE].data[affected_i2] != 0;
 }
 
+/**
+ * Checks what border the player touches.
+ * The player is considered to touch a border
+ * if it is within one pixel of it (0x0200)
+ */
 unsigned char player_onborder() {
-	if(g_player->character.x < 0x0000) {
+	if(g_player->character.x < 0x0200) {
 		return DIRECTION_WEST;
 	}
-	if(g_player->character.x > 0xF000) {
+	if(g_player->character.x > 0xEE00) {
 		return DIRECTION_EAST;
 	}
-	if(g_player->character.y < 0x0000) {
+	if(g_player->character.y < 0x0200) {
 		return DIRECTION_NORTH;
 	}
-	if(g_player->character.x > 0x7000) {
+	if(g_player->character.y > 0x6E00) {
 		return DIRECTION_SOUTH;
 	}
 	return DIRECTION_MIDDLE;
