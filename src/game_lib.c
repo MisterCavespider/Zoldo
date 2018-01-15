@@ -5,34 +5,10 @@
 #include "fxlib.h"
 #include "timer.h"
 
-void onIdle();
-unsigned char to_pixel(unsigned short pos);
-unsigned short to_pos(unsigned char pixel);
+// External values (only globals)
+game_globals_t *g;
 
-typedef char*(*sc_cpv)(void);
-const unsigned int sc0135[] = { 0xD201D002, 0x422B0009, 0x80010070, 0x0135 };
-#define GetVRAMAddress (*(sc_cpv)sc0135)
-
-/* STRUCTS */
-
-void sprite_register(sprite_t *sp, unsigned char i) {
-	if(i > 0) {
-		g_sprite_tile_list[i] = *sp;
-	}
-}
-
-/* EXTERNALS */						//<desc>						<alloc>
-unsigned char *g_vram;				//for revolution				C
-sprite_t *g_sprite_tile_list;		//all tile sprites				ZOLDO
-sprite_t *g_sprite_entity_list;		//all entity sprites			ZOLDO
-sprite_t *g_sprite_projectile_list;	//all projectile sprites		ZOLDO
-mapcache_t *g_mapcache;				//currently loaded map			C
-player_t *g_player;					//player + embedded entity		C
-
-unsigned char *vram = 0x00;
-int g_filehandle = -1;
-
-/* INITS */
+// Initializers
 void globals_initialize() {
 	unsigned char *failsafe = (unsigned char *)MEM_START;
 	*failsafe = 0xFF;
@@ -42,7 +18,7 @@ void globals_initialize() {
 void game_initialize() {
 	globals_initialize();
 
-	//only variables that aren't declared when reading a file
+	//only variables that won't be declared while reading a file
 	g_player = (player_t *)game_cmalloc(sizeof(player_t), MEM_EMPTY);
 	g_mapcache = (mapcache_t *)game_cmalloc(sizeof(mapcache_t) * 4, MEM_EMPTY);
 
@@ -54,11 +30,6 @@ void game_initialize() {
  * This loads a file ("game.zoldo") from storage as read-only.
  * It will then read a header and all the sprites.
  */
-
-//Cheaty and temporary:
-size_t read;
-game_header_t *header;
-
 void load_game() {
 	size_t s = 0;		//temporary value; could be anything
 	FONTCHARACTER path[]={'\\','\\','f','l','s','0','\\','G','A','M','E','.','z','o','l','d','o', 0};
@@ -389,13 +360,6 @@ unsigned char player_onborder() {
 }
 
 /* DRAW */
-unsigned char to_pixel(unsigned short pos) {
-	return (unsigned char) (pos/512);
-}
-
-unsigned short to_pos(unsigned char pixel) {
-	return ((unsigned short)pixel)*512;
-}
 
 void Draw_Sprite(sprite_t *sprite, unsigned char x, unsigned char y) {
 	//DrawSprite(ppx, ppy, 8, 8, 1, player, vram, NO_TRANS);

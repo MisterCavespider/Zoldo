@@ -1,10 +1,12 @@
 #ifndef _GAMELIB_H
 #define _GAMELIB_H
 
+// Includes
 #include "stddef.h"
 #include "revolution.h"
 #include "gamedefs.h"
 
+// Defines (constants)
 #define MEM_START	0x88040000
 #define MEM_IGNORE	0x0
 #define MEM_EMPTY	0x1
@@ -23,39 +25,17 @@
 #define AI_ARG1				0x00F0
 #define AI_ARG2				0x000F
 
-/* STRUCTS */
-typedef struct	player		player_t;
-typedef struct	mapcache	mapcache_t;
+typedef char*(*sc_cpv)(void);	// Code from the web
+const unsigned int sc0135[] = { 0xD201D002, 0x422B0009, 0x80010070, 0x0135 };
+#define GetVRAMAddress (*(sc_cpv)sc0135)
 
-struct player {
-	entity_t character;
-	/*
-	These values describe the position of the chunk compared to the others
+// External values (only globals)
+game_globals_t *g;
 
-	Can store at most 0xFF and 0xFF == a map with 256 by 256 chunks
-	*/
-	unsigned char map_x;
-	unsigned char map_y;
-};
+// Timer & Misc
+void onIdle();	// Shouldn't be called externally, but it could
 
-struct mapcache {
-	mapchunk_t cache[5];
-
-	unsigned char sizes;	//0xF0 | 0x0F
-	entity_t entities[8];	//8 entities (loaded)
-};
-
-/* EXTERNALS */
-extern unsigned char *g_vram;					//where the VRAM is on the 9860gii
-extern sprite_t *g_sprite_tile_list;			//all tile sprites; used to draw chunks
-extern sprite_t *g_sprite_entity_list;			//all sprites; used to draw chunks
-extern sprite_t *g_sprite_projectile_list;		//all sprites; used to draw chunks
-extern mapcache_t *g_mapcache;					//all currently loaded maps
-extern player_t *g_player;						//the player
-
-void sprite_register(sprite_t *sp, unsigned char i);
-
-/* INITS */
+// Initializers
 void globals_initialize();	//initializes extern values
 void game_initialize();		//initializes game values & globals
 void mapcache_init();
