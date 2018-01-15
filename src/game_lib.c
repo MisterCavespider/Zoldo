@@ -1,4 +1,4 @@
-#include "gamelib.h"
+#include "game_lib.h"
 #include "stddef.h"
 #include "stdlib.h"
 #include "revolution.h"

@@ -4,7 +4,7 @@
 // Includes
 #include "stddef.h"
 #include "revolution.h"
-#include "gamedefs.h"
+#include "src/game_defs.h"
 
 // Defines (constants)
 #define MEM_START	0x88040000

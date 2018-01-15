@@ -1,6 +1,6 @@
 #include "fxlib.h"
 #include "revolution.h"
-#include "gamelib.h"
+#include "src/game_lib.h"
 #include <stdio.h>
 
 //The address at which the additional RAM of the 9860gii is.
